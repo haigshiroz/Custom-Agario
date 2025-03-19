@@ -9,6 +9,7 @@ from loguru import logger
 from .menu import MyMenu
 from .msgtype import MsgType
 from .. import View
+from ..helper.move_player import get_random_dir
 
 
 BACKGROUND_COLOR = (24, 26, 50)
@@ -58,8 +59,10 @@ class GameConnection():
                         keys.append(event.key)
                 # get mouse position (velocity vector)
                 mouse_pos = view.mouse_pos_to_polar()
-                # ^ Comment above out and then assign mouse position = up, down, left, or right of the center of the screen
-                # sending velocity vector and list of pressed keys
+                # if want to specify a diraction 
+                # u can set value = 0,0.25,0.5, and 0.75 to represent left,right, up and down
+                mouse_pos = get_random_dir(mouse_pos)
+
                 msg = pickle.dumps({
                     'type': MsgType.UPDATE,
                     'data': {
