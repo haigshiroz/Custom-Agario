@@ -1,20 +1,35 @@
 import socket
-import sys
 import pickle
+import pygame
 import time
 
-import pygame
 from loguru import logger
-
 from .menu import MyMenu
 from .msgtype import MsgType
 from .. import View
 from ..helper.move_player import get_random_dir
 
-
-BACKGROUND_COLOR = (24, 26, 50)
 BACKGROUND_COLOR = (40, 0, 40)
+MAX_UDP_SIZE = 9000  
 
+def receive_large_data(sock):
+    """Receives fragmented UDP packets and reconstructs data"""
+    chunks = {}
+    expected_chunks = None
+
+    while True:
+        data, _ = sock.recvfrom(MAX_UDP_SIZE)
+        i, total, chunk = pickle.loads(data)
+
+        chunks[i] = chunk
+        if expected_chunks is None:
+            expected_chunks = total
+
+        if len(chunks) == expected_chunks:
+            break
+
+    raw_data = b''.join(chunks[i] for i in range(expected_chunks))
+    return pickle.loads(raw_data)
 
 class GameConnection():
     def __init__(self, screen):
@@ -33,32 +48,28 @@ class GameConnection():
         self.port = int(self.port)
 
         try:
-            # send nickname
-            msg = pickle.dumps({
-                'type': MsgType.CONNECT,
-                'data': nick
-                })
+            # Send nickname
+            msg = pickle.dumps({'type': MsgType.CONNECT, 'data': nick})
             sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             sock.sendto(msg, (self.host, self.port))
             logger.debug('Sending {} to {}'.format(msg, self.addr_string))
 
-            # recieving player info
+            # Receive player info
             data = sock.recv(4096)
             self.player_id = pickle.loads(data)
-            logger.debug('Recieved {!r} from {}'.format(self.player_id, self.addr_string))
-            
-            # create view to display game
+            logger.debug('Received {!r} from {}'.format(self.player_id, self.addr_string))
+
+            # Create game view
             view = View(self.screen, None, None)
             while True:
-                # getting list of pressed buttons
-                keys = list()
+                keys = []
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         exit()
                     elif event.type == pygame.KEYDOWN:
                         keys.append(event.key)
-                # get mouse position (velocity vector)
-                mouse_pos = view.mouse_pos_to_polar()
+
+                # mouse_pos = view.mouse_pos_to_polar()
                 # if want to specify a diraction 
                 # u can set value = 0,0.25,0.5, and 0.75 to represent left,right, up and down
                 mouse_pos = get_random_dir(mouse_pos)
@@ -70,13 +81,12 @@ class GameConnection():
                         'keys': keys,
                         },
                     })
+
                 sock.sendto(msg, (self.host, self.port))
 
-                # getting current player and game model state
-                data = sock.recv(2**16)
-                msg = pickle.loads(data)
+                # Receive game state using fragmentation
+                msg = receive_large_data(sock)
 
-                # update view and redraw
                 view.player = None
                 view.model = msg
                 for pl in view.model.players:
@@ -87,51 +97,29 @@ class GameConnection():
                 if view.player is None:
                     logger.debug("Player was killed!")
                     return
-                
-                # Get state
-                state, reward = view.model.get_player_state(self.player_id)
-                print(reward)
 
                 view.redraw()
                 time.sleep(1/40)
         except socket.timeout:
             logger.error('Server not responding')
 
-
 def start(width=900, height=600):
     socket.setdefaulttimeout(2)
 
-    # pygame initialization
     pygame.init()
     screen = pygame.display.set_mode((width, height))
     pygame.display.set_caption('agar.io')
-    icon = pygame.image.load('./img/logo.png')
-    pygame.display.set_icon(icon)
 
-    # init class with game connection
     gameconn = GameConnection(screen)
-    # create menu
-    menu = MyMenu(width*0.9, height*0.9)
-    # bind connection method to menu button
-    menu.update_start_menu(gameconn.connect_to_game)
-    FPS = 30
-    clock = pygame.time.Clock()
 
-    # start pygame loop
-    while True:
-        events = pygame.event.get()
-        for event in events:
-            if event.type == pygame.QUIT:
-                exit()
-        
-        screen.fill(BACKGROUND_COLOR)
-        
-        if menu.get_main_menu().is_enabled():
-            menu.get_main_menu().draw(screen)
-        menu.get_main_menu().update(events)
-        pygame.display.flip()
-        clock.tick(FPS)
+    # calling connect_to_game directly with these attributes, skipping the start menu
+    def get_attrs():
+        return {
+            'addr': '0.0.0.0:9999',  # port 9999 as it shows in-game
+            'nick': 'user'  # can set as per preference
+        }
 
+    gameconn.connect_to_game(get_attrs)
 
 if __name__ == '__main__':
     start()
