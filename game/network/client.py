@@ -69,7 +69,7 @@ class GameConnection():
                     elif event.type == pygame.KEYDOWN:
                         keys.append(event.key)
 
-                # mouse_pos = view.mouse_pos_to_polar()
+                mouse_pos = view.mouse_pos_to_polar()
                 # if want to specify a diraction 
                 # u can set value = 0,0.25,0.5, and 0.75 to represent left,right, up and down
                 mouse_pos = get_random_dir(mouse_pos)
