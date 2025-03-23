@@ -7,6 +7,7 @@ from loguru import logger
 from .menu import MyMenu
 from .msgtype import MsgType
 from .. import View
+from ..helper.move_player import get_random_dir
 
 BACKGROUND_COLOR = (40, 0, 40)
 MAX_UDP_SIZE = 9000  
@@ -68,8 +69,19 @@ class GameConnection():
                     elif event.type == pygame.KEYDOWN:
                         keys.append(event.key)
 
-                mouse_pos = view.mouse_pos_to_polar()
-                msg = pickle.dumps({'type': MsgType.UPDATE, 'data': {'mouse_pos': mouse_pos, 'keys': keys}})
+                # mouse_pos = view.mouse_pos_to_polar()
+                # if want to specify a diraction 
+                # u can set value = 0,0.25,0.5, and 0.75 to represent left,right, up and down
+                mouse_pos = get_random_dir(mouse_pos)
+
+                msg = pickle.dumps({
+                    'type': MsgType.UPDATE,
+                    'data': {
+                        'mouse_pos': mouse_pos,
+                        'keys': keys,
+                        },
+                    })
+
                 sock.sendto(msg, (self.host, self.port))
 
                 # Receive game state using fragmentation
