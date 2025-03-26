@@ -119,23 +119,24 @@ class GameConnection():
             logger.error('Server not responding')
 
 def start(width=900, height=600):
-    socket.setdefaulttimeout(2)
+    while True:
+        socket.setdefaulttimeout(2)
 
-    pygame.init()
-    screen = pygame.display.set_mode((width, height))
-    pygame.display.set_caption('agar.io')
+        pygame.init()
+        screen = pygame.display.set_mode((width, height))
+        pygame.display.set_caption('agar.io')
 
-    gameconn = GameConnection(screen)
+        gameconn = GameConnection(screen)
 
-    # calling connect_to_game directly with these attributes, skipping the start menu
-    def get_attrs():
-        return {
-            # 'addr': '0.0.0.0:9999',  # port 9999 as it shows in-game
-            'addr': 'localhost:9999',
-            'nick': 'user'  # can set as per preference
-        }
+        # calling connect_to_game directly with these attributes, skipping the start menu
+        def get_attrs():
+            return {
+                # 'addr': '0.0.0.0:9999',  # port 9999 as it shows in-game
+                'addr': 'localhost:9999',
+                'nick': 'user'  # can set as per preference
+            }
 
-    gameconn.connect_to_game(get_attrs)
+        gameconn.connect_to_game(get_attrs)
 
 if __name__ == '__main__':
     start()

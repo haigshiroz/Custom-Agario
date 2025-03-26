@@ -117,13 +117,13 @@ class Model():
                 max_food_amt = 0
                 largest_bigger_amt = 0
                 largest_smaller_amt = 0
-                state = {"max_food_amt": 0,
+                state = {"most_food": 0,
                             "largest_bigger": 4,
                             "largest_smaller": 4}
                 # For each direction
                 for direction_idx in range(len(directions)):
                     direction = directions[direction_idx]
-                    num_cells_in_direction = 0
+                    num_cells_in_direction = -1
                     # For each chunk in that direction
                     for chunk_idx in direction:
                         temp_chunk = chunks[chunk_idx]
