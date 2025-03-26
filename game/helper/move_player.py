@@ -1,10 +1,21 @@
 import math
 import random
 import numpy as np
+import os
 
 
 def get_direction_and_keys(mouse_pos, direction = None, shoot = None):
-        Q_table = np.load('Q_table.pickle', allow_pickle=True)
+         # Get the absolute path of the script's directory
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+
+        # Move up two levels to reach "Custom-Agario"
+        project_root = os.path.dirname(os.path.dirname(script_dir))
+
+        # Construct the absolute path to Q_table.pickle
+        q_table_path = os.path.join(project_root, "Q_table.pickle")
+
+        # Load the Q-table
+        Q_table = np.load(q_table_path, allow_pickle=True)
 
         keys = []
 

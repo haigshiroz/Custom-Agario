@@ -10,7 +10,7 @@ agario_path = os.path.join(current_directory, "agario.py")
 if platform.system() == 'Darwin':
     subprocess.run(['osascript', '-e', f'tell application "Terminal" to do script "conda deactivate && python3 {agario_path} --server"'])
 
-    times_to_run = 10
+    times_to_run = 2
     for i in range(times_to_run):
         subprocess.run(['osascript', '-e', f'tell application "Terminal" to do script "conda deactivate && python3 {agario_path}"'])
 
@@ -19,7 +19,7 @@ elif platform.system() == 'Windows':
     # subprocess.run(['start', 'cmd.exe', '/K', f'conda deactivate && python {agario_path} --server'])
     subprocess.Popen(['powershell', '-NoExit', '-Command', f'python {agario_path} --server'])
 
-    times_to_run = 10
+    times_to_run = 2
     for i in range(times_to_run):
         # subprocess.run(['start', 'cmd.exe', '/K', f'conda deactivate && python {agario_path}'])
         subprocess.Popen(['powershell', '-NoExit', '-Command', f'python {agario_path}'])

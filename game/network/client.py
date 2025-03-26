@@ -3,6 +3,7 @@ import pickle
 import pygame
 import time
 import numpy as np
+import os
 
 from loguru import logger
 from .menu import MyMenu
@@ -73,7 +74,34 @@ class GameConnection():
 
                 mouse_pos = view.mouse_pos_to_polar()
                 # if want to specify a diraction 
-                Q_table = np.load('Q_table.pickle', allow_pickle=True)
+                print("@1Current Working Directory:", os.getcwd())
+                print("@1File exists:", os.path.exists('Q_table.pickle'))
+
+                # Get the absolute path of the script's directory
+                script_dir = os.path.dirname(os.path.abspath(__file__))
+
+                # Move up two levels to reach "Custom-Agario"
+                project_root = os.path.dirname(os.path.dirname(script_dir))
+
+                # Construct the absolute path to Q_table.pickle
+                q_table_path = os.path.join(project_root, "Q_table.pickle")
+                Q_num_updates = os.path.join(project_root, 'Q_num_updates.pickle')
+
+                
+                # Debugging output
+                print("Looking for Q_table.pickle at:", q_table_path)
+                print("Python sees file:", os.path.exists(q_table_path))
+
+                # Check if the file exists
+                if not os.path.exists(q_table_path):
+                    raise FileNotFoundError(f"❌ Q_table.pickle not found at {q_table_path}")
+
+                # Load the Q-table
+                Q_table = np.load(q_table_path, allow_pickle=True)
+                print("✅ Q_table loaded successfully!")
+                print("@2Current Working Directory:", os.getcwd())
+                print("@2File exists:", os.path.exists('Q_table.pickle'))
+                # Q_table = np.load('Q_table.pickle', allow_pickle=True)
                 # TODO: Get a direction based off the prev_state (include randomness? decaying epsilon).
                 #       Just doing argmax rn
 
@@ -111,7 +139,7 @@ class GameConnection():
                 prev_state, reward = view.model.get_player_state(self.player_id)
                 # print(prev_state, ",", reward)
                 # TODO: Have the state and reward here. Need to update the Q_table
-                Q_updates = np.load('Q_num_updates.pickle', allow_pickle=True)
+                Q_updates = np.load(Q_num_updates, allow_pickle=True)
 
                 view.redraw()
                 time.sleep(1/40)
