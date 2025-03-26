@@ -16,8 +16,10 @@ if platform.system() == 'Darwin':
 
 # For Windows
 elif platform.system() == 'Windows':
-    subprocess.run(['start', 'cmd.exe', '/K', f'conda deactivate && python {agario_path} --server'])
+    # subprocess.run(['start', 'cmd.exe', '/K', f'conda deactivate && python {agario_path} --server'])
+    subprocess.Popen(['powershell', '-NoExit', '-Command', f'python {agario_path} --server'])
 
     times_to_run = 10
     for i in range(times_to_run):
-        subprocess.run(['start', 'cmd.exe', '/K', f'conda deactivate && python {agario_path}'])
+        # subprocess.run(['start', 'cmd.exe', '/K', f'conda deactivate && python {agario_path}'])
+        subprocess.Popen(['powershell', '-NoExit', '-Command', f'python {agario_path}'])
