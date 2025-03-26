@@ -2,12 +2,13 @@ import socket
 import pickle
 import pygame
 import time
+import numpy as np
 
 from loguru import logger
 from .menu import MyMenu
 from .msgtype import MsgType
 from .. import View
-from ..helper.move_player import get_random_dir
+from ..helper.move_player import get_direction_and_keys
 
 BACKGROUND_COLOR = (40, 0, 40)
 MAX_UDP_SIZE = 9000  
@@ -61,6 +62,7 @@ class GameConnection():
 
             # Create game view
             view = View(self.screen, None, None)
+            prev_state = 0
             while True:
                 keys = []
                 for event in pygame.event.get():
@@ -71,8 +73,16 @@ class GameConnection():
 
                 mouse_pos = view.mouse_pos_to_polar()
                 # if want to specify a diraction 
-                # u can set value = 0,0.25,0.5, and 0.75 to represent left,right, up and down
-                mouse_pos = get_random_dir(mouse_pos)
+                Q_table = np.load('Q_table.pickle', allow_pickle=True)
+                # TODO: Get a direction based off the prev_state (include randomness? decaying epsilon).
+                #       Just doing argmax rn
+
+                # If action = 5 (split), also get the argmax from 1-4 to see which direction to split in
+                # If action is 1-4, move in the direction (1 = up, 2 = right, 3 = down, 4 = left)
+                should_shoot = np.argmax(Q_table[prev_state]) == 5
+                direction_to_go = np.argmax(Q_table[prev_state][:-1])
+                # Can set direction = 1, 2, 3, 4 to represent left,right, up and down
+                mouse_pos, keys = get_direction_and_keys(mouse_pos, direction=direction_to_go, shoot=should_shoot)
 
                 msg = pickle.dumps({
                     'type': MsgType.UPDATE,
@@ -98,6 +108,11 @@ class GameConnection():
                     logger.debug("Player was killed!")
                     return
 
+                prev_state, reward = view.model.get_player_state(self.player_id)
+                # print(prev_state, ",", reward)
+                # TODO: Have the state and reward here. Need to update the Q_table
+                Q_updates = np.load('Q_num_updates.pickle', allow_pickle=True)
+
                 view.redraw()
                 time.sleep(1/40)
         except socket.timeout:
@@ -115,7 +130,8 @@ def start(width=900, height=600):
     # calling connect_to_game directly with these attributes, skipping the start menu
     def get_attrs():
         return {
-            'addr': '0.0.0.0:9999',  # port 9999 as it shows in-game
+            # 'addr': '0.0.0.0:9999',  # port 9999 as it shows in-game
+            'addr': 'localhost:9999',
             'nick': 'user'  # can set as per preference
         }
 
