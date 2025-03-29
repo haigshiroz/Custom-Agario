@@ -23,3 +23,5 @@ elif platform.system() == 'Windows':
     for i in range(times_to_run):
         # subprocess.run(['start', 'cmd.exe', '/K', f'conda deactivate && python {agario_path}'])
         subprocess.Popen(['powershell', '-NoExit', '-Command', f'python {agario_path}'])
+
+

@@ -6,7 +6,8 @@ Q_table = {}
 Q_num_updates = {}
 
 # Fill them with dummy values
-for temp_state in range(100):
+# First 100 states are during the game, state 101 is player died
+for temp_state in range(101):
     # Initialize action dictionaries
     Q_table[temp_state] = []
     Q_num_updates[temp_state] = []

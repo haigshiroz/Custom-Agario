@@ -1,29 +1,27 @@
 import math
 import random
-import numpy as np
 
-
-def get_direction_and_keys(mouse_pos, direction = None, shoot = None):
-        Q_table = np.load('Q_table.pickle', allow_pickle=True)
-
+def get_direction_and_keys(direction = None, split = None):
         keys = []
 
-        angle,speed = mouse_pos
+        # Value retrieved from view's mouse_to_polar. Float between [0, 1] 
+        speed = 1
+
         if direction is None:
             direction = random.random() 
-        if shoot is None:
-             shoot = random.random() > 0.5 
+        if split is None:
+             split = random.random() > 0.9
 
-        if (shoot):
+        if (split):
             keys = [32] # For space bar
 
-        if direction == 1: #left
+        if direction == 0: #left
             return ((math.pi,speed), keys)
-        elif direction == 2:#up
+        elif direction == 1:#up
             return ((1/2*math.pi,speed), keys)
-        elif direction == 3:#right
+        elif direction == 2:#right
             return ((0,speed), keys)
-        else:#down, value = 4
+        else:#down, value = 3
             return ((3/2*math.pi,speed), keys)
 
         # if 0 <= value < 0.25: #left
