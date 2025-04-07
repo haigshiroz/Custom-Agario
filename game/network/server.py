@@ -89,6 +89,15 @@ class UDPHandler(socketserver.BaseRequestHandler):
                 last_cell_update_time = time.time()
             model.update()
 
+
+            if player.id not in [p.id for p in model.players]:
+                logger.info(f"Player died and respawning...")
+                print(f"Player died and respawning...")
+                new_player = Player.make_random(player.name, bounds)
+                clients[self.client_address] = new_player
+                model.add_player(new_player)
+                player = new_player  
+
             # Send the game state using fragmentation
             send_large_data(self.request[1], model.copy_for_client(player.center()), self.client_address)
 
@@ -105,7 +114,7 @@ def update_cells_by_players(num_per_player,max):
 
     if current_cell_count < desired_cell_count:
         model.spawn_cells(desired_cell_count - current_cell_count)
-        print(f'@food{desired_cell_count - current_cell_count}nums added')
+        # print(f'@food{desired_cell_count - current_cell_count}nums added')
 
 
 if __name__ == '__main__':
