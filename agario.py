@@ -26,6 +26,12 @@ parser.add_argument(
     type=int,
     default=9999,
     help='port number for server')
+# add a way to switch between auto or manual control
+parser.add_argument(
+    '-m', '--manual',
+    action='store_true',
+    dest='manual',
+    help='control the player manually')
 
 args = parser.parse_args()
 
@@ -34,4 +40,4 @@ if args.server:
     server.start(host='0.0.0.0', port=args.port)
 else:
     import game.network.client as client
-    client.start(args.width, args.height)
+    client.start(args.width, args.height, manual=args.manual)

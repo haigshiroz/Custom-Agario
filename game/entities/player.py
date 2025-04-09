@@ -98,6 +98,9 @@ class Player(interfaces.Victim, interfaces.Killer):
 
     def center(self):
         """Returns median position of all player cells."""
+        # TODO need check if we can asign it to zero 
+        # if not self.parts:
+        #     return [0, 0]
         xsum = sum((cell.pos[0] for cell in self.parts))
         ysum = sum((cell.pos[1] for cell in self.parts))
         center = [
