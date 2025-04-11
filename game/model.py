@@ -116,7 +116,7 @@ class Model():
 
                 max_food_amt = 0
                 largest_bigger_amt = 0
-                largest_smaller_amt = 0
+                largest_smaller_amt = -9999999
                 state = {"most_food": 0,
                             "largest_bigger": 4,
                             "largest_smaller": 4}
