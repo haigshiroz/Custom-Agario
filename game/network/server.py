@@ -91,12 +91,12 @@ class UDPHandler(socketserver.BaseRequestHandler):
 
 
             if player.id not in [p.id for p in model.players]:
-                logger.info(f"Player died and respawning...")
-                print(f"Player died and respawning...")
-                new_player = Player.make_random(player.name, bounds)
-                clients[self.client_address] = new_player
-                model.add_player(new_player)
-                player = new_player  
+                # logger.info(f"Player died and respawning...")
+                logger.info(f"Player died ...")
+                # new_player = Player.make_random(player.name, bounds)
+                # clients[self.client_address] = new_player
+                # model.add_player(new_player)
+                # player = new_player  
 
             # Send the game state using fragmentation
             send_large_data(self.request[1], model.copy_for_client(player.center()), self.client_address)

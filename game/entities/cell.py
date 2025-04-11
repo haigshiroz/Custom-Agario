@@ -25,34 +25,8 @@ class Cell(Circle, interfaces.Victim):
         # angle of speed in rad
         self.angle = angle
         # speed coeff from 0.0 to 1.0
-        # self.speed = speed
-        self.speed = min(max(speed, 0.0), 1.0)
+        self.speed = max(speed, self.MIN_SPEED)
 
-    # def move(self):
-    #     """Move accroding to stored velocity."""
-    #     self.speed -= self.FRICTION
-    #     if self.speed < 0:
-    #         self.speed = 0
-    #     # get cartesian vector
-    #     diff_xy = gu.polar_to_cartesian(self.angle, self.speed*self.MAX_SPEED)
-    #     # change position
-    #     self.pos = list(map(add, self.pos, diff_xy))
-
-    # def update_velocity(self, angle, speed):
-    #     """Add self velocity vector with passed velocity vector."""
-    #     # convert to cartesian
-    #     before_speed = self.speed
-    #     v1 = gu.polar_to_cartesian(angle, speed)
-    #     v2 = gu.polar_to_cartesian(self.angle, self.speed)
-    #     # adding vectors
-    #     v3 = list(map(add, v1, v2))
-    #     # convert to polar
-    #     self.angle, self.speed = gu.cartesian_to_polar(*v3)
-    #     # normilize speed coeff
-    #     if before_speed <= 1 and self.speed > 1:
-    #         self.speed = 1
-    #     elif before_speed > 1 and self.speed > before_speed:
-    #         self.speed = before_speed
     def get_effective_speed(self):
         """Calc the speed based on the mass """
         return self.MIN_SPEED + (self.MAX_SPEED - self.MIN_SPEED) * math.exp(-self.SPEED_DECAY * self.radius)
@@ -66,7 +40,7 @@ class Cell(Circle, interfaces.Victim):
     
     def update_velocity(self, angle, speed):
         self.angle = angle % (2 * math.pi)
-        self.speed = min(max(speed, 0.0), 1.0)
+        self.speed = max(speed, self.MIN_SPEED)
 
     def try_to_kill_by(self, killer):
         """Check is killer cell could eat current cell."""
