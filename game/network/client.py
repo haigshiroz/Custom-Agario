@@ -216,6 +216,7 @@ class GameConnection():
                     logger.debug("Player was killed!")
                     if not manual:
                         self.q_trainer.update_qtable(prev_state, action, -3000, 101)
+                        self.q_trainer.end_of_episode(self)
                     return
 
                 if not manual:

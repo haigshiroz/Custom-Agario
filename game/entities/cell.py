@@ -5,6 +5,7 @@ from .. import gameutils as gu
 from . import interfaces
 from .circle import Circle
 
+import math
 
 class Cell(Circle, interfaces.Victim):
     """Represents cell(food) state."""
@@ -14,6 +15,8 @@ class Cell(Circle, interfaces.Victim):
     MAX_SPEED = 5
     SIZES = (5, 7, 10)
     SIZES_CUM = (70, 20, 10)
+    SPEED_DECAY = 0.03
+    MIN_SPEED = 1.0
 
     def __init__(self, pos, radius, color, angle=0, speed=0):
         super().__init__(pos, radius)
@@ -22,33 +25,48 @@ class Cell(Circle, interfaces.Victim):
         # angle of speed in rad
         self.angle = angle
         # speed coeff from 0.0 to 1.0
-        self.speed = speed
+        # self.speed = speed
+        self.speed = min(max(speed, 0.0), 1.0)
 
+    # def move(self):
+    #     """Move accroding to stored velocity."""
+    #     self.speed -= self.FRICTION
+    #     if self.speed < 0:
+    #         self.speed = 0
+    #     # get cartesian vector
+    #     diff_xy = gu.polar_to_cartesian(self.angle, self.speed*self.MAX_SPEED)
+    #     # change position
+    #     self.pos = list(map(add, self.pos, diff_xy))
+
+    # def update_velocity(self, angle, speed):
+    #     """Add self velocity vector with passed velocity vector."""
+    #     # convert to cartesian
+    #     before_speed = self.speed
+    #     v1 = gu.polar_to_cartesian(angle, speed)
+    #     v2 = gu.polar_to_cartesian(self.angle, self.speed)
+    #     # adding vectors
+    #     v3 = list(map(add, v1, v2))
+    #     # convert to polar
+    #     self.angle, self.speed = gu.cartesian_to_polar(*v3)
+    #     # normilize speed coeff
+    #     if before_speed <= 1 and self.speed > 1:
+    #         self.speed = 1
+    #     elif before_speed > 1 and self.speed > before_speed:
+    #         self.speed = before_speed
+    def get_effective_speed(self):
+        """Calc the speed based on the mass """
+        return self.MIN_SPEED + (self.MAX_SPEED - self.MIN_SPEED) * math.exp(-self.SPEED_DECAY * self.radius)
+    
     def move(self):
-        """Move accroding to stored velocity."""
-        self.speed -= self.FRICTION
-        if self.speed < 0:
-            self.speed = 0
-        # get cartesian vector
-        diff_xy = gu.polar_to_cartesian(self.angle, self.speed*self.MAX_SPEED)
-        # change position
+        self.speed = max(0, self.speed - self.FRICTION)
+        
+        move_distance = self.speed * self.get_effective_speed()
+        diff_xy = gu.polar_to_cartesian(self.angle, move_distance)
         self.pos = list(map(add, self.pos, diff_xy))
-
+    
     def update_velocity(self, angle, speed):
-        """Add self velocity vector with passed velocity vector."""
-        # convert to cartesian
-        before_speed = self.speed
-        v1 = gu.polar_to_cartesian(angle, speed)
-        v2 = gu.polar_to_cartesian(self.angle, self.speed)
-        # adding vectors
-        v3 = list(map(add, v1, v2))
-        # convert to polar
-        self.angle, self.speed = gu.cartesian_to_polar(*v3)
-        # normilize speed coeff
-        if before_speed <= 1 and self.speed > 1:
-            self.speed = 1
-        elif before_speed > 1 and self.speed > before_speed:
-            self.speed = before_speed
+        self.angle = angle % (2 * math.pi)
+        self.speed = min(max(speed, 0.0), 1.0)
 
     def try_to_kill_by(self, killer):
         """Check is killer cell could eat current cell."""
