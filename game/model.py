@@ -37,7 +37,7 @@ class Model():
             self.cells = cells
 
     # duration of round in seconds
-    ROUND_DURATION = 240
+    ROUND_DURATION = 10
 
     '''
     chunk_size shows how far to render the screen for the player 
@@ -256,7 +256,7 @@ class Model():
                     logger.debug(f'{player} ate {killed_cell}')
                     self.remove_cell(killed_cell)
                     player.ate_cell_reward()
-                    self.cells.remove(killed_cell)
+                    # self.cells.remove(killed_cell)
             
             # check is player killed other players or their parts
             for another_player in players:
