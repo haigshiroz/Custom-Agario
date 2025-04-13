@@ -37,7 +37,7 @@ class Model():
             self.cells = cells
 
     # duration of round in seconds
-    ROUND_DURATION = 10
+    ROUND_DURATION = 240
 
     '''
     chunk_size shows how far to render the screen for the player 
