@@ -28,7 +28,6 @@ def custom_hash(state):
 
 class Model():
     """Class that represents game state."""
-    
 
     class Chunk():
         def __init__(self, players=None, cells=None):
@@ -50,6 +49,7 @@ class Model():
         self.bounds = bounds
         self.chunk_size = chunk_size
         self.chunks = list()
+
         for i in range((self.bounds[0] * 2) // chunk_size + 1):
             self.chunks.append(list())
             for j in range((self.bounds[1] * 2) // chunk_size + 1):
@@ -60,7 +60,23 @@ class Model():
         for cell in cells:
             self.add_cell(cell)
 
+        self.round_scores = {}  
+        self.current_round = 0
         self.round_start = time.time()
+
+    def _record_round_scores(self):
+        """Record the maximum score achieved in this round."""
+        if not self.players:
+            logger.debug("No players to record scores")
+            return
+            
+        max_score = max(player.score() for player in self.players)
+        self.round_scores[self.current_round] = max_score
+        logger.debug(f"Round {self.current_round} max score: {max_score}")
+
+        # Plot every 5 rounds
+        # if self.current_round % 5 == 0:
+        self._plot_scores()
 
     def update_velocity(self, player, angle, speed):
         """Update passed player velocity."""
@@ -88,6 +104,43 @@ class Model():
         else:
             logger.debug(f'{player} tried to split, but he can\'t')
 
+    def _plot_scores(self):
+        """Plot the maximum scores per round."""
+        try:
+            import matplotlib.pyplot as plt
+            import os
+            
+            if not self.round_scores:
+                logger.debug("No scores to plot")
+                return
+
+            plt.figure(figsize=(10, 5))
+            
+            rounds = sorted(self.round_scores.keys())
+            max_scores = [self.round_scores[r] for r in rounds]
+            
+            plt.plot(rounds, max_scores, 'b-', label='Max Score')
+            plt.scatter(rounds, max_scores, color='red')
+            
+            plt.xlabel('Round Number')
+            plt.ylabel('Max Score')
+            plt.title('Maximum Blob Score per Round')
+            plt.legend()
+            plt.grid(True)
+            
+            os.makedirs('plots', exist_ok=True)
+            plot_path = f'plots/max_scores_round_{self.current_round}.png'
+            plt.savefig(plot_path)
+            plt.close()
+            logger.debug(f"Saved max score plot to {plot_path}")
+            
+        except ImportError:
+            logger.warning("Matplotlib not installed, skipping plot")
+        except Exception as e:
+            logger.error(f"Error plotting scores: {e}")
+
+
+
     def get_player_state(self, player_id):
         # player = None
         # for temp_player in self.players:
@@ -97,7 +150,7 @@ class Model():
 
         # if (player == None):
         #     raise Exception("Player is not in game")
-
+        
         for player in self.players:
             if player.id == player_id:
                 # get chuncks around player
@@ -157,14 +210,15 @@ class Model():
                 return ret
     
         raise Exception("Player is not in game")
-
-
+    
     def update(self):
         """Updates game state."""
         if time.time() - self.round_start >= self.ROUND_DURATION:
             logger.debug('New round was started.')
+            self._record_round_scores()  
             self.__reset_players()
             self.round_start = time.time()
+            self.current_round += 1
 
         # update cells
         for cell in self.cells:
@@ -202,7 +256,7 @@ class Model():
                     logger.debug(f'{player} ate {killed_cell}')
                     self.remove_cell(killed_cell)
                     player.ate_cell_reward()
-                    # self.cells.remove(killed_cell)
+                    self.cells.remove(killed_cell)
             
             # check is player killed other players or their parts
             for another_player in players:

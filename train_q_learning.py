@@ -21,7 +21,7 @@ MAX_STEPS_PER_EPISODE = 10           # Steps per episode
 
 class QTraining():
     def __init__(self):
-        self.epsilon = 1.0 # Probablity of choosing a random action versus from QTable
+        self.epsilon = 0.01 # Probablity of choosing a random action versus from QTable
         # self.epsilon = 0.01 # For demo
         
         self.decay_rate = 0.99990408 # Decay rate for epsilon: 1 to 0.1 take 56 mins and 29 second
