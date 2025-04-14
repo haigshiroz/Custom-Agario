@@ -125,6 +125,7 @@ class GameConnection():
                         self.q_trainer.update_qtable(prev_state, action, players_reward, new_state)
                         prev_state = new_state
                         players_reward = 0
+                        
                         action_timer = 0
 
                     action_timer += 1

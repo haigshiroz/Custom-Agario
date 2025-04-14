@@ -21,12 +21,13 @@ MAX_STEPS_PER_EPISODE = 10           # Steps per episode
 
 class QTraining():
     def __init__(self):
-        self.epsilon = 0.01 # Probablity of choosing a random action versus from QTable
+        #TODO: only for testing change back 1 for trainning
+        self.epsilon =  0  # Probablity of choosing a random action versus from QTable
         # self.epsilon = 0.01 # For demo
         
-        self.decay_rate = 0.99990408 # Decay rate for epsilon: 1 to 0.1 take 56 mins and 29 second
+        # self.decay_rate = 0.99990408 # Decay rate for epsilon: 1 to 0.1 take 56 mins and 29 second
         # self.decay_rate = 0.9999990408 # Decay rate for epsilon: 1 to 0.1 take about 93 hours and 46 mins
-        # self.decay_rate = 0.999990408 # Decay rate for epsilo: 1 to 0.1 take 9 hrs and 38 mins
+        self.decay_rate = 0.999990408 # Decay rate for epsilo: 1 to 0.1 take 9 hrs and 38 mins
     '''
     Purpose: 
     Returns what action the agent should do. 
