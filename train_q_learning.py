@@ -69,8 +69,7 @@ class QTraining():
             action = np.argmax(q_table[prev_state])
             direction_to_go = np.argmax(q_table[prev_state][:-1])
             print("acton: Q_table")
-        # return (action, direction_to_go)
-        return (1, 1)
+        return (action, direction_to_go)
 
     def update_qtable(self, prev_state: int, action: int, reward: int,  new_state: int) -> None:
         lock_table = FileLock(Q_TABLE_PATH + ".lock")
