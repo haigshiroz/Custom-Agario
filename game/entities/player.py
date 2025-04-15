@@ -1,6 +1,7 @@
 import functools
 import operator
 import math
+import random
 
 from .. import gameutils as gu
 from . import interfaces
@@ -153,11 +154,18 @@ class Player(interfaces.Victim, interfaces.Killer):
         self.parts[0].area_pool = 0
         self.parts[0].radius = self.START_SIZE
 
+    
     @classmethod
     def make_random(cls, nick, bounds):
-        """Returns random player with given nick."""
+        """Returns random player with given nick with size variation"""
         player_cell = PlayerCell.make_random(bounds)
-        player_cell.radius = cls.START_SIZE
+        
+        # 20% chance for large size (40-70), 80% chance for default (40)
+        if random.random() < 0.2:  # 20% probability
+            player_cell.radius = random.randint(40, 70)  # Random size between 40-60
+        else:
+            player_cell.radius = cls.START_SIZE  # Default 40
+        
         return cls(nick, player_cell)
 
     def __repr__(self):

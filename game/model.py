@@ -204,76 +204,134 @@ class Model():
         else:
             logger.debug(f'{player} tried to split, but he can\'t')
 
-    def get_player_state(self, player_id):
-        # player = None
-        # for temp_player in self.players:
-        #     if temp_player.id == player_id:
-        #         player = temp_player
-        #         break
+    # def get_player_state(self, player_id):
+    #     # player = None
+    #     # for temp_player in self.players:
+    #     #     if temp_player.id == player_id:
+    #     #         player = temp_player
+    #     #         break
 
-        # if (player == None):
-        #     raise Exception("Player is not in game")
+    #     # if (player == None):
+    #     #     raise Exception("Player is not in game")
         
+    #     for player in self.players:
+    #         if player.id == player_id:
+    #             # get chuncks around player
+    #             chunks = self.__nearby_chunks_custom(player.center())
+
+    #             # [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 0), (0, 1), (1, -1), (1, 0), (1, 1)]
+    #             # bottom left, left, top left, bottom, middle, top, bottom right, right, top right
+
+    #             # Encapsulate all 3 cells in a direction + middle
+    #             top_idxs = [2, 4, 5, 8] # 0
+    #             right_idxs = [4, 6, 7, 8] # 1
+    #             bot_idxs = [0, 3, 4, 6] # 2
+    #             left_idxs = [0,1,2, 4] # 3
+    #             # none # 4
+    #             directions = [top_idxs, right_idxs, bot_idxs, left_idxs]
+
+    #             max_food_amt = 0
+    #             largest_bigger_amt = 0
+    #             largest_smaller_amt = -9999999
+    #             state = {"most_food": 0,
+    #                         "largest_bigger": 4,
+    #                         "largest_smaller": 4}
+    #             # For each direction
+    #             for direction_idx in range(len(directions)):
+    #                 direction = directions[direction_idx]
+    #                 num_cells_in_direction = -1
+    #                 # For each chunk in that direction
+    #                 for chunk_idx in direction:
+    #                     temp_chunk = chunks[chunk_idx]
+
+    #                     # Go to next chunk if isn't a valid chunk (ex: wall)
+    #                     if (temp_chunk == None):
+    #                         continue
+
+    #                     # Add amount of food in that chunk
+    #                     num_cells_in_direction += len(temp_chunk.cells)
+    #                     # Check if there is a larger bigger player and larger smaller player
+    #                     for player2 in temp_chunk.players:
+    #                         if player2.id != player.id:
+    #                             difference_in_mass = player2.score() - player.score()
+    #                             if (difference_in_mass < 0):
+    #                                 # Other player is smaller than this player 
+    #                                 if (difference_in_mass > largest_smaller_amt):
+    #                                     state["largest_smaller"] = direction_idx
+    #                                     largest_smaller_amt = difference_in_mass
+    #                             else:
+    #                                 # Other player is bigger than this player
+    #                                 if (difference_in_mass > largest_bigger_amt):
+    #                                     state["largest_bigger"] = direction_idx
+    #                                     largest_bigger_amt = difference_in_mass
+    #                     if (num_cells_in_direction > max_food_amt):
+    #                         state["most_food"] = direction_idx
+    #                         max_food_amt = num_cells_in_direction
+
+    #             state_hash = custom_hash(state)
+    #             ret = (state_hash, player.reward)
+    #             return ret
+    
+    #     raise Exception("Player is not in game")
+   
+    def get_player_state(self, player_id):
         for player in self.players:
             if player.id == player_id:
-                # get chuncks around player
                 chunks = self.__nearby_chunks_custom(player.center())
-
-                # [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 0), (0, 1), (1, -1), (1, 0), (1, 1)]
-                # bottom left, left, top left, bottom, middle, top, bottom right, right, top right
-
-                # Encapsulate all 3 cells in a direction + middle
-                top_idxs = [2, 4, 5, 8] # 0
-                right_idxs = [4, 6, 7, 8] # 1
-                bot_idxs = [0, 3, 4, 6] # 2
-                left_idxs = [0,1,2, 4] # 3
-                # none # 4
-                directions = [top_idxs, right_idxs, bot_idxs, left_idxs]
+                directions = [
+                    [2, 4, 5, 8],  # up
+                    [4, 6, 7, 8],   # right
+                    [0, 3, 4, 6],   # down
+                    [0, 1, 2, 4]    # left
+                ]
 
                 max_food_amt = 0
                 largest_bigger_amt = 0
                 largest_smaller_amt = -9999999
-                state = {"most_food": 0,
-                            "largest_bigger": 4,
-                            "largest_smaller": 4}
-                # For each direction
+                state = {
+                    "most_food": 0,
+                    "largest_bigger": 4,
+                    "largest_smaller": 4
+                }
+
+                
+                SIGNIFICANT_RATIO = 1.5
+
                 for direction_idx in range(len(directions)):
                     direction = directions[direction_idx]
                     num_cells_in_direction = -1
-                    # For each chunk in that direction
+                    
                     for chunk_idx in direction:
                         temp_chunk = chunks[chunk_idx]
-
-                        # Go to next chunk if isn't a valid chunk (ex: wall)
-                        if (temp_chunk == None):
+                        if temp_chunk is None:
                             continue
 
-                        # Add amount of food in that chunk
                         num_cells_in_direction += len(temp_chunk.cells)
-                        # Check if there is a larger bigger player and larger smaller player
+                        
                         for player2 in temp_chunk.players:
                             if player2.id != player.id:
-                                difference_in_mass = player2.score() - player.score()
-                                if (difference_in_mass < 0):
-                                    # Other player is smaller than this player 
-                                    if (difference_in_mass > largest_smaller_amt):
-                                        state["largest_smaller"] = direction_idx
-                                        largest_smaller_amt = difference_in_mass
-                                else:
-                                    # Other player is bigger than this player
-                                    if (difference_in_mass > largest_bigger_amt):
+                                ratio = player2.score() / player.score()
+                                # difference = player2.score() - player.score()
+                                
+                               # （ratio > 1.5）
+                                if ratio > SIGNIFICANT_RATIO:
+                                    if state["largest_bigger"] == 4 or ratio > SIGNIFICANT_RATIO :  
                                         state["largest_bigger"] = direction_idx
-                                        largest_bigger_amt = difference_in_mass
-                        if (num_cells_in_direction > max_food_amt):
+                                        
+                                # （ratio < 2/3 ）
+                                elif ratio < 1/SIGNIFICANT_RATIO:
+                                    if state["largest_smaller"] == 4 or ratio < 1/(SIGNIFICANT_RATIO):  
+                                        state["largest_smaller"] = direction_idx
+
+                        
+                        if num_cells_in_direction > max_food_amt:
                             state["most_food"] = direction_idx
                             max_food_amt = num_cells_in_direction
 
-                state_hash = custom_hash(state)
-                ret = (state_hash, player.reward)
-                return ret
-    
+                return (custom_hash(state), player.reward)
+        
         raise Exception("Player is not in game")
-    
+
     def update(self):
         """Updates game state."""
         if time.time() - self.round_start >= self.ROUND_DURATION:

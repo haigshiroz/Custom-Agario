@@ -11,7 +11,7 @@ from filelock import FileLock
 EXCEL_PATH = "state_scores.xlsx"      # The excel file with rough data
 Q_TABLE_PATH = "Q_table.pickle"       # Output file for the Q-table
 Q_NUM_UPDATES_PATH = "Q_num_updates.pickle"       # Output file for the Q-table's number of updates
-NUM_ACTIONS = 5                       # kept it at 6 due to 6 action states
+NUM_ACTIONS = 4                       # kept it at 6 due to 6 action states
 
 ALPHA = 0.1                           # Learning rate factor taken at rought as of now
 GAMMA = 0.95                          # Discount factor(it is also a rough estiamte)
@@ -22,7 +22,7 @@ MAX_STEPS_PER_EPISODE = 10           # Steps per episode
 class QTraining():
     def __init__(self):
         #TODO: only for testing change back 1 for trainning
-        self.epsilon =  0  # Probablity of choosing a random action versus from QTable
+        self.epsilon =  0.0  # Probablity of choosing a random action versus from QTable
         # self.epsilon = 0.01 # For demo
         
         # self.decay_rate = 0.99990408 # Decay rate for epsilon: 1 to 0.1 take 56 mins and 29 second
@@ -69,7 +69,8 @@ class QTraining():
             action = np.argmax(q_table[prev_state])
             direction_to_go = np.argmax(q_table[prev_state][:-1])
             print("acton: Q_table")
-        return (action, direction_to_go)
+        # return (action, direction_to_go)
+        return (1, 1)
 
     def update_qtable(self, prev_state: int, action: int, reward: int,  new_state: int) -> None:
         lock_table = FileLock(Q_TABLE_PATH + ".lock")
