@@ -2,7 +2,6 @@
 import random
 import pyautogui
 import time
-import math
 import json 
 
 import torch
@@ -331,6 +330,7 @@ def graph_time_alive(time_alive):
     plt.title("Time Alive (s) vs Episode")
     plt.xlabel("Episode Number")
     plt.ylabel("Time Alive (s)")
+    plt.show()
 
 
 
@@ -355,7 +355,7 @@ def run_training():
     # Instantiate both models
     predict_nn = DQN(n_frames=FRAMES_PER, n_actions=NUM_ACTIONS, width=PREPROCESS_WIDTH, height=PREPROCESS_HEIGHT) # Theta 1
     target_nn = DQN(n_frames=FRAMES_PER, n_actions=NUM_ACTIONS, width=PREPROCESS_WIDTH, height=PREPROCESS_HEIGHT) # Theta 2    
-    predict_nn.load_state_dict(torch.load('./SAVED/predict_nn_weights-433.pth'))
+    # predict_nn.load_state_dict(torch.load('./SAVED/predict_nn_weights.pth')) # Use if you want to continue training a model
     
     # Have them start with the same weights
     target_nn.load_state_dict(predict_nn.state_dict())
@@ -433,10 +433,10 @@ with open('mse.json', 'w') as f:
 
 
 # Loads saved statistics
-with open('./SAVED/mse-incomplete.json', 'r') as f:
+with open('./SAVED/mse.json', 'r') as f:
     mse = json.load(f)
 
-with open('./SAVED/time_alive-incomplete.json', 'r') as f:
+with open('./SAVED/time_alive.json', 'r') as f:
     time_alive = json.load(f)
 
 
@@ -444,7 +444,7 @@ with open('./SAVED/time_alive-incomplete.json', 'r') as f:
 
 
 
-# --- Training using DQN Techniques ---
+# --- Running Trained Model ---
 
 '''
 Helper for running the main run-without-training loop to take a screenshot, run through the DQN, 
