@@ -43,7 +43,9 @@ We explored an alternative initialization approach in a separate branch:
 ## How to Reproduce
 ```bash
 # Train the model (will generate progress plots)
-python multiple_instance.py  
+python q_learning.py --train
+# Test the model
+python q_learning.py --test
 
 ```
 
