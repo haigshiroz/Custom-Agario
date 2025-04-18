@@ -29,7 +29,7 @@ Our implementation yielded suboptimal performance with several key observations:
    - Difficulty handling dynamic multiplayer scenarios
    - Limited actions cannot be matched to probe results
 
-## Experimental Branch: NewModel
+## Experimental Branch: Q_learning_test
 We explored an alternative initialization approach in a separate branch:
 
 **Key Differences from Main Branch**:
@@ -136,10 +136,4 @@ Basic Game Control:
 Run server with specified port:
 
     python3 agario.py --server --port 7839
-
-
-## Screenshots
-![Main menu](./screenshots/main_menu.png)
-![Start menu](./screenshots/start_menu.png)
-![Game](./screenshots/game.png)
 
