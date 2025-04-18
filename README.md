@@ -3,7 +3,7 @@
 ## Project Overview
 We implemented a Q-learning-based AI agent to autonomously play Agar.io. Our agent was designed to learn strategies for mass accumulation through reward-based learning.
 
-## Experimental Branch: NewModel
+## Experimental Branch: Q_learning_test
 We explored an alternative initialization approach in a separate branch:
 
 **Key Differences from Main Branch**:
