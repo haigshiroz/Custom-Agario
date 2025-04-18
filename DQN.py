@@ -49,7 +49,9 @@ SCREENSHOT_WINDOW = None # (0, 243, screen_width, 1277)
 GAMMA = 0.95 # Discount factor
 LEARNING_RATE = 0.0001 # For gradient descent
 EPSILON = 1  # Randomness probability
-DECAY_RATE = 0.9998 # Decay rate for randomness, use 0.9975 for 100 lives, use 0.999 for 200 lives, 9993 for 300 lives, 0.9998 for 600 lives
+# From training, 1 episode ~ 2000 actions (updates to decay rate)
+# Choose decay rate that ends the epsilon right below 0.01
+DECAY_RATE = 0.9998 # Decay rate for randomness, use 0.9975 for 100 lives, use 0.999 for 200 lives, 0.9993 for 300 lives, 0.9998 for 600 lives
 NUM_ACTIONS = len(DIRECTIONS) + 1 # + 1 is for splitting
 
 FRAMES_PER = 2 # How many frames are inputted to the model to convey motion
