@@ -1,1 +1,0 @@
-all = ['client', 'menu', 'msgtype', 'server']
