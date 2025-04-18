@@ -45,6 +45,8 @@ In order for pyautogui to successfully and efficiently capture data, we run Agar
 
 ![Alt text](AgarioSettings.png)
 
+Close out of the settings and make sure the "Play" button is in view.
+
 Now, return back to the python script and run the script. The script will automatically use the "Alt Tab" shortcut to switch windows to the Agar.io site.
 
 **IN ORDER TO CALIBRATE THE SCREEN:** Click on the top left of the playing field, the bottom right of the playing field, and then hover your mouse to a GREEN PORTION of the "Play" button, alt tab back to where you are running the code, and click one last time. Then, the script will again alt tab back to the game and start playing/training.
