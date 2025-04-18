@@ -135,9 +135,12 @@ class GameConnection():
 
         except socket.timeout:
             logger.error('Server not responding')
-def start(width=900, height=600, manual=False):
+def start(width=900, height=600, manual=False, train_mode=True, load_from_history=False):
     print("Start - print")
-    q_learner = QTraining()
+    q_learner = QTraining(
+        train_mode=train_mode,
+        load_from_history=load_from_history
+    )
     while True:
 
         socket.setdefaulttimeout(2)

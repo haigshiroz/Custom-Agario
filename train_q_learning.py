@@ -19,15 +19,22 @@ MAX_STEPS_PER_EPISODE = 10           # Steps per episode
 
 
 class QTraining():
-    def __init__(self):
-        #TODO: only for testing change back 1 for trainning
-        self.epsilon =  1.0  # Probablity of choosing a random action versus from QTable
-        # self.epsilon = 0.01 # For demo
+    def __init__(self, train_mode=True, load_from_history=False):
+
+        if train_mode and not load_from_history:
+            self._initialize_empty_q_tables()
+        else:
+            self._load_existing_q_tables()
+        
+        #Train:1.0; Test:0.0
+        self.epsilon = 1.0 if train_mode else 0.0
+        self.decay_rate = 0.999990408  # Only used in training mode
         
         # self.decay_rate = 0.99990408 # Decay rate for epsilon: 1 to 0.1 take 56 mins and 29 second
         # self.decay_rate = 0.9999990408 # Decay rate for epsilon: 1 to 0.1 take about 93 hours and 46 mins
         self.decay_rate = 0.999990408 # Decay rate for epsilo: 1 to 0.1 take 9 hrs and 38 mins
         self.episodes = EPISODES
+
     '''
     Purpose: 
     Returns what action the agent should do. 
@@ -128,3 +135,47 @@ class QTraining():
         with lock_updates:
             with open(Q_NUM_UPDATES_PATH, "wb") as f:
                 pickle.dump(q_num_updates, f)
+
+    def _initialize_empty_q_tables(self):
+        """Initialize Q-table"""
+        print("Initializing empty Q-tables for new training session")
+        # 
+        Q_table = {}
+        Q_num_updates = {}
+
+        # Fill them with dummy values
+        # First 100 states are during the game, state 101 is player died
+        for temp_state in range(101):
+            # Initialize action dictionaries
+            Q_table[temp_state] = []
+            Q_num_updates[temp_state] = []
+            # For each action
+            for a in range(5):
+                # Initialize values to 0
+                Q_table[temp_state].append(0.0)
+                # Q_table[temp_state].append(random.random()) # Just to test
+                Q_num_updates[temp_state].append(0)
+
+        with open('Q_table.pickle', 'wb') as handle:
+            pickle.dump(Q_table, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+        with open('Q_num_updates.pickle', 'wb') as handle:
+            pickle.dump(Q_num_updates, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    
+    def _load_existing_q_tables(self):
+        """Loading existing Q-tables"""
+        print("Loading existing Q-tables to continue training")
+        try:
+            # try load exist files
+            with open(Q_TABLE_PATH, 'rb') as f:
+                self.Q_table = pickle.load(f)
+            
+            with open(Q_NUM_UPDATES_PATH, 'rb') as f:
+                self.Q_num_updates = pickle.load(f)
+            
+            print("Successfully loaded existing Q-tables")
+        
+        except (FileNotFoundError, EOFError):
+            print("No existing Q-tables found, initializing empty ones instead")
+            self._initialize_empty_q_tables()
