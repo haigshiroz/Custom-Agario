@@ -42,107 +42,7 @@ class GameConnection():
         self.port = None
         self.addr_string = None
         self.q_trainer = q_trainer
-
-    # def connect_to_game(self, get_attrs, manual):
-    #     attrs = get_attrs()
-    #     self.addr_string = attrs['addr']
-    #     nick = attrs['nick']
-    #     self.host, self.port = self.addr_string.split(':')
-    #     self.port = int(self.port)
-
-    #     try:
-    #         # Send nickname
-    #         msg = pickle.dumps({'type': MsgType.CONNECT, 'data': nick})
-    #         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    #         sock.sendto(msg, (self.host, self.port))
-    #         logger.debug('Sending {} to {}'.format(msg, self.addr_string))
-
-    #         # Receive player info
-    #         data = sock.recv(4096)
-    #         self.player_id = pickle.loads(data)
-    #         logger.debug('Received {!r} from {}'.format(self.player_id, self.addr_string))
-
-    #         # Create game view
-    #         view = View(self.screen, None, None)
-
-    #         action_timer = 0 # Reset every time it reaches 10
-    #         prev_state = 0 # Random
-    #         action, direction_to_go = (1, 1) # Random
-    #         should_split = False
-    #         players_reward = 0
-    #         while True:
-    #             keys = []
-    #             for event in pygame.event.get():
-    #                 if event.type == pygame.QUIT:
-    #                     exit()
-    #                 elif event.type == pygame.KEYDOWN:
-    #                     keys.append(event.key)
-
-    #             if (action_timer == 5):
-    #                 action, direction_to_go = self.q_trainer.get_action_and_direction(prev_state)
-    #                 should_split = action == 4
-
-    #                 should_split = False # TODO
-
-
-
-    #             mouse_pos, keys = get_direction_and_keys(direction=direction_to_go, split=should_split)
-    #             # mouse_pos = view.mouse_pos_to_polar()
-    
-    #             # print(f"[AI] State: {prev_state}, Action: {action}, Split: {should_split}, Direction: {direction_to_go}")
-
-    #             # Equivalent to .step(), executes the action
-    #             msg = pickle.dumps({
-    #                 'type': MsgType.UPDATE,
-    #                 'data': {
-    #                     'mouse_pos': mouse_pos,
-    #                     'keys': keys,
-    #                     },
-    #                 })
-                
-    #             # Reset should_split so it doesn't continuously try to shoot
-    #             should_split = False
-
-    #             sock.sendto(msg, (self.host, self.port))
-
-    #             # Receive game state using fragmentation
-    #             # After the action is executed, we get the reward, next state, etc
-    #             msg = receive_large_data(sock)
-
-    #             view.player = None
-    #             view.model = msg
-    #             for pl in view.model.players:
-    #                 if pl.id == self.player_id:
-    #                     view.player = pl
-    #                     break
-
-    #             if view.player is None:
-    #                 logger.debug("Player was killed!")
-    #                 # Reward for dying is -3000, state of dying is 101
-    #                 self.q_trainer.update_qtable(prev_state, action, -3000, 101) # TODO?
-    #                 return
-                
-    #             # Observe the environment
-    #             new_state, reward = view.model.get_player_state(self.player_id)
-    #             players_reward += reward
-
-    #             if (action_timer == 5):
-    #                 print("Reward:", players_reward, "Prev state:", prev_state, "Action:", action, "Direction:", direction_to_go)
-
-    #                 # Update qtable
-    #                 self.q_trainer.update_qtable(prev_state, action, players_reward, new_state)
-
-    #                 # Update state
-    #                 prev_state = new_state
-    #                 players_reward = 0
-    #                 action_timer = 0
-
-    #             view.redraw()
-    #             time.sleep(1/40)
-    #             # time.sleep(0.25)
-    #             action_timer += 1
-    #     except socket.timeout:
-    #         logger.error('Server not responding')
+        
     def connect_to_game(self, get_attrs, manual=False):
         attrs = get_attrs()
         self.addr_string = attrs['addr']
@@ -165,13 +65,12 @@ class GameConnection():
             # Create view
             view = View(self.screen, None, None)
 
-            # --- AI 控制相关变量初始化 ---
+            # --- AI initializ state and action variable---
             action_timer = 0
             prev_state = 0
             action, direction_to_go = (1, 1)
             should_split = False
             players_reward = 0
-
             while True:
                 keys = []
                 for event in pygame.event.get():
@@ -186,8 +85,9 @@ class GameConnection():
                     if action_timer == 5:
                         action, direction_to_go = self.q_trainer.get_action_and_direction(prev_state)
                         should_split = action == 4
-                        # TODO: you canmodeo. remove or change this
+                        # TODO: Remove if we can handle the split state
                         should_split = False
+                        self.q_trainer.end_of_episode()
 
                     mouse_pos, keys = get_direction_and_keys(direction=direction_to_go, split=should_split)
                     should_split = False
@@ -204,14 +104,12 @@ class GameConnection():
 
                 # Receive game state
                 msg = receive_large_data(sock)
-
                 view.player = None
                 view.model = msg
                 for pl in view.model.players:
                     if pl.id == self.player_id:
                         view.player = pl
-                        break
-
+                        break   
                 if view.player is None:
                     logger.debug("Player was killed!")
                     if not manual:
@@ -223,10 +121,11 @@ class GameConnection():
                     players_reward += reward
 
                     if action_timer == 5:
-                        print("Reward:", players_reward, "Prev state:", prev_state, "Action:", action, "Direction:", direction_to_go)
+                        print("Reward:", players_reward, "Prev state:", prev_state, "Action:", action, "Direction:", direction_to_go, "epsilon:", self.q_trainer.epsilon)
                         self.q_trainer.update_qtable(prev_state, action, players_reward, new_state)
                         prev_state = new_state
                         players_reward = 0
+                        
                         action_timer = 0
 
                     action_timer += 1
@@ -238,8 +137,8 @@ class GameConnection():
             logger.error('Server not responding')
 def start(width=900, height=600, manual=False):
     print("Start - print")
+    q_learner = QTraining()
     while True:
-        q_learner = QTraining()
 
         socket.setdefaulttimeout(2)
 

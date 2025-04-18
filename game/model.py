@@ -28,7 +28,6 @@ def custom_hash(state):
 
 class Model():
     """Class that represents game state."""
-    
 
     class Chunk():
         def __init__(self, players=None, cells=None):
@@ -50,6 +49,7 @@ class Model():
         self.bounds = bounds
         self.chunk_size = chunk_size
         self.chunks = list()
+
         for i in range((self.bounds[0] * 2) // chunk_size + 1):
             self.chunks.append(list())
             for j in range((self.bounds[1] * 2) // chunk_size + 1):
@@ -60,7 +60,123 @@ class Model():
         for cell in cells:
             self.add_cell(cell)
 
+        self.round_stats = []  # List to store per-round statistics
+        self.current_round = 0
         self.round_start = time.time()
+        self.kill_counts = {}
+
+    def _record_round_stats(self):
+        """Record statistics for the current round"""
+        if not self.players:
+            logger.debug("No players available to record statistics")
+            return
+            
+        # Calculate mass statistics
+        max_mass = max(player.score() for player in self.players)
+        avg_mass = sum(player.score() for player in self.players) / len(self.players)
+        
+        # Calculate kill statistics
+        total_kills = sum(self.kill_counts.values())
+        avg_kills = total_kills / len(self.players) if self.players else 0
+        
+        # Store statistics
+        stats = {
+            'round': self.current_round,
+            'max_mass': max_mass,
+            'avg_mass': avg_mass,
+            'total_kills': total_kills,
+            'avg_kills': avg_kills,
+            'timestamp': time.strftime("%Y-%m-%d %H:%M:%S")
+        }
+        self.round_stats.append(stats)
+        
+        # Reset kill counters for next round
+        self.kill_counts = {player.id: 0 for player in self.players}
+        
+        # Save data and generate plots
+        self._save_stats()
+        self._plot_stats()
+    
+    def _save_stats(self):
+        """Save statistics to CSV"""
+        try:
+            import pandas as pd
+            import os
+            os.makedirs('stats', exist_ok=True)
+            
+            # Prepare data
+            data = {
+                'round': [s['round'] for s in self.round_stats],
+                'max_mass': [s['max_mass'] for s in self.round_stats],
+                'avg_mass': [s['avg_mass'] for s in self.round_stats],
+                'total_kills': [s['total_kills'] for s in self.round_stats],
+                'avg_kills': [s['avg_kills'] for s in self.round_stats],
+                'timestamp': [s['timestamp'] for s in self.round_stats]
+            }
+            
+            # Save to CSV
+            csv_path = 'stats/game_stats.csv'
+            df = pd.DataFrame(data)
+            df.to_csv(csv_path, index=False)
+            logger.debug(f"Statistics saved to {csv_path}")
+            
+        except Exception as e:
+            logger.error(f"Error saving data: {e}")
+
+
+    def _plot_stats(self):
+        """Generate statistics plots with vertical layout"""
+        try:
+            import matplotlib.pyplot as plt
+            import os
+            
+            if not self.round_stats:
+                logger.debug("No statistics available to plot")
+                return
+                
+            os.makedirs('plots', exist_ok=True)
+            
+            rounds = [s['round'] for s in self.round_stats]
+            
+            # Create figure with vertical subplots
+            plt.figure(figsize=(10, 8))  # Wider than tall
+            
+            # Mass plot (top)
+            plt.subplot(2, 1, 1)  # 2 rows, 1 column, position 1
+            plt.plot(rounds, [s['max_mass'] for s in self.round_stats], 
+                    'r-', label='Max Mass', marker='o')
+            plt.plot(rounds, [s['avg_mass'] for s in self.round_stats], 
+                    'b-', label='Avg Mass', marker='s')
+            plt.ylabel('Mass')
+            plt.title('Player Mass Evolution')
+            plt.legend()
+            plt.grid(True)
+            
+            # Kills plot (bottom)
+            plt.subplot(2, 1, 2)  # 2 rows, 1 column, position 2
+            plt.plot(rounds, [s['total_kills'] for s in self.round_stats], 
+                    'g-', label='Total Kills', marker='^')
+            plt.plot(rounds, [s['avg_kills'] for s in self.round_stats], 
+                    'm-', label='Avg Kills', marker='D')
+            plt.xlabel('Round Number')
+            plt.ylabel('Kills')
+            plt.title('Player Kill Performance')
+            plt.legend()
+            plt.grid(True)
+            
+            # Adjust layout to prevent overlap
+            plt.tight_layout(pad=2.0)
+            
+            # Save plot
+            plot_path = 'plots/game_stats_vertical.png'
+            plt.savefig(plot_path)
+            plt.close()
+            logger.debug(f"Vertical statistics plots saved to {plot_path}")
+            
+        except ImportError:
+            logger.warning("Matplotlib not installed, skipping plots")
+        except Exception as e:
+            logger.error(f"Error generating vertical plots: {e}")
 
     def update_velocity(self, player, angle, speed):
         """Update passed player velocity."""
@@ -97,7 +213,7 @@ class Model():
 
         # if (player == None):
         #     raise Exception("Player is not in game")
-
+        
         for player in self.players:
             if player.id == player_id:
                 # get chuncks around player
@@ -157,14 +273,15 @@ class Model():
                 return ret
     
         raise Exception("Player is not in game")
-
-
+    
     def update(self):
         """Updates game state."""
         if time.time() - self.round_start >= self.ROUND_DURATION:
             logger.debug('New round was started.')
+            self._record_round_stats()
             self.__reset_players()
             self.round_start = time.time()
+            self.current_round += 1
 
         # update cells
         for cell in self.cells:
@@ -212,11 +329,13 @@ class Model():
                 if killed_cell:
                     if len(another_player.parts) == 1:
                         logger.debug(f'{player} ate {another_player}')
+                        self.kill_counts[player.id] = self.kill_counts.get(player.id, 0) + 1
                         self.remove_player(another_player)
                         observable_players.remove(another_player)
                         another_player.remove_part(killed_cell)
                         player.ate_player_reward()
                         another_player.death_reward()
+
                     else:
                         logger.debug(f'{player} ate {another_player} part {killed_cell}')
 

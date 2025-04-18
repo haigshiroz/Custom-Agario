@@ -8,22 +8,26 @@ from filelock import FileLock
 
 
 # --- CONFIGURATION ---
-EXCEL_PATH = "state_scores.xlsx"      # The excel file with rough data
 Q_TABLE_PATH = "Q_table.pickle"       # Output file for the Q-table
 Q_NUM_UPDATES_PATH = "Q_num_updates.pickle"       # Output file for the Q-table's number of updates
 NUM_ACTIONS = 5                       # kept it at 6 due to 6 action states
 
 ALPHA = 0.1                           # Learning rate factor taken at rought as of now
 GAMMA = 0.95                          # Discount factor(it is also a rough estiamte)
-EPISODES = 100                        # Total episodes to train
+EPISODES = 100                       # Total episodes to train
 MAX_STEPS_PER_EPISODE = 10           # Steps per episode
 
 
 class QTraining():
     def __init__(self):
-        self.epsilon = 1 # Probablity of choosing a random action versus from QTable
-        self.decay_rate = 0.99 # Decay rate for epsilon
-
+        #TODO: only for testing change back 1 for trainning
+        self.epsilon =  1.0  # Probablity of choosing a random action versus from QTable
+        # self.epsilon = 0.01 # For demo
+        
+        # self.decay_rate = 0.99990408 # Decay rate for epsilon: 1 to 0.1 take 56 mins and 29 second
+        # self.decay_rate = 0.9999990408 # Decay rate for epsilon: 1 to 0.1 take about 93 hours and 46 mins
+        self.decay_rate = 0.999990408 # Decay rate for epsilo: 1 to 0.1 take 9 hrs and 38 mins
+        self.episodes = EPISODES
     '''
     Purpose: 
     Returns what action the agent should do. 
@@ -59,11 +63,12 @@ class QTraining():
                 direction_to_go = random.randint(0, NUM_ACTIONS - 2)
             else:
                 direction_to_go = action
+            print("acton: Random")
         # Choose best action from QTable
         else:
             action = np.argmax(q_table[prev_state])
             direction_to_go = np.argmax(q_table[prev_state][:-1])
-
+            print("acton: Q_table")
         return (action, direction_to_go)
 
     def update_qtable(self, prev_state: int, action: int, reward: int,  new_state: int) -> None:
@@ -123,62 +128,3 @@ class QTraining():
         with lock_updates:
             with open(Q_NUM_UPDATES_PATH, "wb") as f:
                 pickle.dump(q_num_updates, f)
-
-
-
-# # Loading our data from excel
-# df = pd.read_excel(EXCEL_PATH)
-# states = df['State'].tolist()
-# scores = df['Score'].tolist()
-
-# max_state = max(states)
-# q_table = np.zeros((max_state + 1, NUM_ACTIONS))
-
-# # Look up for rewards
-# reward_lookup = dict(zip(states, scores))
-
-# # Training data
-# for episode in range(EPISODES):
-#     state = random.choice(states)
-
-#     for step in range(MAX_STEPS_PER_EPISODE):
-#         epsilon = 0.1
-#         if random.random() < epsilon:
-#             action = random.randint(0, NUM_ACTIONS - 1)
-#         else:
-#             action = np.argmax(q_table[state])
-
-#         reward = reward_lookup.get(state, 0)
-
-#         if random.random() < 0.5:
-#             next_state = min(max_state, state + random.choice([-1, 1]))
-#         else:
-#             next_state = state
-
-#         # Updating the given Q-Learning
-#         old_value = q_table[state][action]
-#         next_max = np.max(q_table[next_state])
-#         new_value = (1 - ALPHA) * old_value + ALPHA * (reward + GAMMA * next_max)
-#         q_table[state][action] = new_value
-
-#         state = next_state
-
-# print(" Episodic Q-learning training complete.")
-
-# # Saving trained table
-# with open(Q_TABLE_PATH, "wb") as f:
-#     pickle.dump(q_table, f)
-
-# print(f" Trained Q-table saved to: {"C:\Users\prana\OneDrive\Desktop\FAI_New\Custom-Agario\q_table.py"}" )
-
-
-'''
-  File "C:\0-Projects\Courses\CS5100\Custom-Agario\game\network\client.py", line 82, in connect_to_game
-    action, direction_to_go = self.q_trainer.get_action_and_direction(prev_state)
-                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\0-Projects\Courses\CS5100\Custom-Agario\train_q_learning.py", line 40, in get_action_and_direction
-    q_table = np.load(Q_TABLE_PATH, allow_pickle=True)
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\0-Projects\Courses\CS5100\Custom-Agario\venv\Lib\site-packages\numpy\lib\_npyio_impl.py", line 460, in load
-    raise EOFError("No data left in file")
-'''
