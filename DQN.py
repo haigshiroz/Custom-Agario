@@ -1,6 +1,5 @@
 # Imports & Constants
 import random
-import pyautogui
 import time
 import json 
 
@@ -16,6 +15,10 @@ import matplotlib.pyplot as plt
 from torchvision import transforms
 
 from PIL import Image
+
+import pyautogui
+from pynput import mouse
+
 
 
 # --- Pyautogui Constants ---
@@ -39,8 +42,8 @@ center = (screen_width * 1/2, screen_height * 1/2)
 
 DIRECTIONS = [up_coord, right_coord, down_coord, left_coord, up_right_coord, down_right_coord, down_left_coord, up_left_coord, center]
 
-PLAY_BUTTON_COORD = (screen_width * 1/2, 731)
-
+PLAY_BUTTON_COORD = None # (screen_width * 1/2, 731)
+SCREENSHOT_WINDOW = None # (0, 243, screen_width, 1277)
 
 # --- DQN Constants ---
 GAMMA = 0.95 # Discount factor
@@ -53,6 +56,55 @@ FRAMES_PER = 2 # How many frames are inputted to the model to convey motion
 
 PREPROCESS_WIDTH = 120
 PREPROCESS_HEIGHT = 53
+
+
+
+
+done_calibrating = False
+top_left = None
+bottom_right = None
+# NOTE: Used ChatGPT to detect where we click to calibrate the screen
+def calibrate_screen(x, y, button, pressed):
+    global top_left
+    global bottom_right
+    global PLAY_BUTTON_COORD
+    global SCREENSHOT_WINDOW
+    global done_calibrating
+
+    if (top_left != None and bottom_right != None and PLAY_BUTTON_COORD != None):
+        print(top_left, bottom_right, PLAY_BUTTON_COORD)
+
+        width = bottom_right[0] - top_left[0]
+        height = bottom_right[1] - top_left[1]
+        SCREENSHOT_WINDOW = (top_left[0], top_left[1], width, height)
+        print(SCREENSHOT_WINDOW)
+
+        done_calibrating = True
+        return False
+
+    if (pressed):
+        if (top_left == None):
+            print("Waiting for bottom right")
+            top_left = (x, y)
+        elif (bottom_right == None):
+            print("Waiting for play - GREEN AREA")
+            bottom_right = (x, y)
+        else:
+            print("Got play")
+            PLAY_BUTTON_COORD = (x, y)
+
+# Start listening
+with mouse.Listener(on_click=calibrate_screen) as listener:
+    print("Waiting for Top Left")
+    # Tab to agario
+    pyautogui.hotkey('alt', 'tab')
+    time.sleep(0.5)
+    pyautogui.keyDown('enter')
+    time.sleep(0.5)
+    listener.join()
+
+while (not done_calibrating):
+    continue
 
 
 
@@ -166,7 +218,7 @@ def agario_died() -> bool:
     dead = True
 
     # Take colored screenshot
-    agario_sc = pyautogui.screenshot(region=(0, 243, screen_width, 1277))
+    agario_sc = pyautogui.screenshot(region=SCREENSHOT_WINDOW)
     img_np = np.array(agario_sc)
 
     # Iterate through each pixel
@@ -400,7 +452,7 @@ def run_training():
                 while (start_game_pixel != (52, 127, 1) and start_game_pixel != (84, 200, 0)):
                     time.sleep(0.1) 
                     # Take another screenshot and check again
-                    start_game_sc = pyautogui.screenshot(region=(1344, 731, 1,1))
+                    start_game_sc = pyautogui.screenshot(region=(PLAY_BUTTON_COORD[0], PLAY_BUTTON_COORD[1], 1,1))
                     start_game_pixel = start_game_sc.getpixel((0, 0))
 
                 time_alive.append(time.time() - time_start)
@@ -510,7 +562,7 @@ def run_model_without_training():
             while (start_game_pixel != (52, 127, 1) and start_game_pixel != (84, 200, 0)):
                 time.sleep(0.1)
                 # Take another screenshot and check again
-                start_game_sc = pyautogui.screenshot(region=(1344, 731, 1,1))
+                start_game_sc = pyautogui.screenshot(region=(PLAY_BUTTON_COORD[0], PLAY_BUTTON_COORD[1], 1,1))
                 start_game_pixel = start_game_sc.getpixel((0, 0))
 
             print(f"Time alive: {time.time() - time_start}")

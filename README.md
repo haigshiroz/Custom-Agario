@@ -32,12 +32,21 @@ pip install numpy
 
 # To render images
 pip install Pillow
+
+# To calibrate screen
+pip install pynput
 ```
 
-Then, open up a new tab and go to the official Agar.io website: https://agar.io/#ffa
+### Running
+
+Open up a new tab and go to the official Agar.io website: https://agar.io/#ffa
 
 In order for pyautogui to successfully and efficiently capture data, we run Agar.io on a Google Chrome browser with an adblocker (Pie Adblock) to allow for seamless training between deaths. Otherwise, simple modifications would be needed to detect the "Play" button. Lastly, make sure your game settings turns off any "distractions" with the following configuration:
 
 ![Alt text](AgarioSettings.png)
 
-Now, return back to the python script and run the script. The script will automatically use the "Alt Tab" shortcut to switch windows to the Agar.io site and will start playing for you. This script will take control of your mouse and keyboard, but if at any point you need to stop the program, moving the cursor to any corner of the screen will throw a pyautogui exception. 
+Now, return back to the python script and run the script. The script will automatically use the "Alt Tab" shortcut to switch windows to the Agar.io site.
+
+**IN ORDER TO CALIBRATE THE SCREEN:** Click on the top left of the playing field, the bottom right of the playing field, and then hover your mouse to a GREEN PORTION of the "Play" button, alt tab back to where you are running the code, and click one last time. Then, the script will again alt tab back to the game and start playing/training.
+
+This script will take control of your mouse and keyboard, but if at any point you need to stop the program, moving the cursor to any corner of the screen will throw a pyautogui exception. 
