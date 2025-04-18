@@ -1,0 +1,9 @@
+python -m venv .venv
+.\.venv\Scripts\activate
+
+pip install pyautogui # To capture screenshots and control player
+pip install torch # For DQN
+pip install torchvision # For DQN
+pip install matplotlib # To graph results
+pip install numpy # To graph results
+pip install Pillow # To render images
