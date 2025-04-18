@@ -11,7 +11,7 @@ if platform.system() == 'Darwin':
     command = f"cd '{current_directory}' && conda deactivate && python3 '{agario_path}' --server"
     subprocess.run(['osascript', '-e', f'tell application "Terminal" to do script "{command}"'])
 
-    times_to_run = 5
+    times_to_run = 10
     for i in range(times_to_run):
         command = f"cd '{current_directory}' && conda deactivate && python3 '{agario_path}'"
         subprocess.run(['osascript', '-e', f'tell application "Terminal" to do script "{command}"'])

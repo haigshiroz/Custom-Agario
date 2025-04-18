@@ -85,7 +85,7 @@ class GameConnection():
                     if action_timer == 5:
                         action, direction_to_go = self.q_trainer.get_action_and_direction(prev_state)
                         should_split = action == 4
-                        # TODO: you canmodeo. remove or change this
+                        # TODO: Remove if we can handle the split state
                         should_split = False
                         self.q_trainer.end_of_episode()
 

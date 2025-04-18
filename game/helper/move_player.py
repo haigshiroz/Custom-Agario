@@ -15,20 +15,11 @@ def get_direction_and_keys(direction = None, split = None):
         if (split):
             keys = [32] # For space bar
 
-        if direction == 0: #left
+        if direction == 3: #left
             return ((math.pi,speed), keys)
-        elif direction == 1:#up
+        elif direction == 0:#up
             return ((1/2*math.pi,speed), keys)
-        elif direction == 2:#right
+        elif direction == 1:#right
             return ((0,speed), keys)
         else:#down, value = 3
             return ((3/2*math.pi,speed), keys)
-
-        # if 0 <= value < 0.25: #left
-        #     return math.pi,speed
-        # elif 0.25 <= value < 0.5:#right
-        #     return 0,speed
-        # elif 0.5 <= value < 0.75:#up
-        #     return 1/2*math.pi,speed
-        # else:#down
-        #     return 3/2*math.pi,speed
